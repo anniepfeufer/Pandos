@@ -27,6 +27,7 @@
 #define EOS				    '\0'
 
 #define NULL 			    ((void *)0xFFFFFFFF)
+#define MAXPROC 20          /* Maximum number of concurrent processes */
 
 /* device interrupts */
 #define DISKINT			  3
