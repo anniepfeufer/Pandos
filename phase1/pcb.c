@@ -38,7 +38,8 @@ pcb_t *allocPcb()
     allocated->p_prev = NULL;
     allocated->p_prnt = NULL;
     allocated->p_child = NULL;
-    allocated->p_sib = NULL;
+    allocated->p_sib_left = NULL;
+    allocated->p_sib_right = NULL;
     allocated->p_s = (state_t){0}; // Reset processor state
     allocated->p_time = 0;
     allocated->p_semAdd = NULL;
@@ -59,69 +60,7 @@ void freePcb(pcb_t *p)
     pcbFree_h = p;
 }
 
-<<<<<<< HEAD
 
-/**
- *  Return TRUE if the pcb pointed to by p has no children.
- *  Return FALSE otherwise. 
- */
-int emptyChild(pcb_t *p)
-{
-    if (p->p_child == NULL)
-        return TRUE;
-
-    return FALSE;
-}
-
-/**
- * Make the pcb pointed to by p a child of the pcb pointed to by prnt.
- */
-void insertChild(pcb_t *prnt, pcb_t *p)
-{
-    pcb_t *first_sib = prnt->p_child;
-    prnt->p_child = p;
-    p->p_sib_right = first_sib;
-    first_sib->p_sib_left = p;
-    p->p_prnt = prnt;
-}
-
-/**
- *  Make the first child of the pcb pointed to by p no longer a child of
- * p. Return NULL if initially there were no children of p. Otherwise,
- * return a pointer to this removed first child pcb. 
- */
-pcb_t *removeChild(pcb_t *p)
-{
-    if (emptyChild(p))
-        return NULL;
-    pcb_t *removed = p->p_child;
-    return outChild(removed);
-}
-
-/**
- *  Make the pcb pointed to by p no longer the child of its parent. If
- * the pcb pointed to by p has no parent, return NULL; otherwise, return
- * p. Note that the element pointed to by p need not be the first child of
- * its parent. 
- */
-pcb_t *outChild(pcb_t *p)
-{
-    if (p->p_prnt==NULL)
-        return NULL;
-
-    if (p->p_prnt->p_child == p)
-        p->p_prnt->p_child = p->p_sib_right;
-
-    p->p_sib_left->p_sib_right = p->p_sib_right;
-    p->p_sib_right->p_sib_left = p->p_sib_left;
-
-    p->p_prnt = NULL;
-    p->p_sib_left = NULL;
-    p->p_sib_right = NULL;
-
-    
-}
-=======
 /**
  * Returns a NULL pointer, representing an empty process queue.
  */
@@ -246,4 +185,86 @@ pcb_t *headProcQ(pcb_t *tp)
         return NULL;
     return tp->p_next;
 }
->>>>>>> 32b3feb (updated queue maintenance)
+
+/**
+ *  Return TRUE if the pcb pointed to by p has no children.
+ *  Return FALSE otherwise.
+ */
+int emptyChild(pcb_t *p)
+{
+    if (p->p_child == NULL)
+        return TRUE;
+
+    return FALSE;
+}
+
+/**
+ * Make the pcb pointed to by p a child of the pcb pointed to by prnt.
+ */
+void insertChild(pcb_t *prnt, pcb_t *p)
+{
+    if (prnt == NULL || p == NULL)
+        return;
+
+    pcb_t *first_sib = prnt->p_child;
+
+    prnt->p_child = p;          // Insert p as the first child
+    p->p_prnt = prnt;           // Set parent pointer
+    p->p_sib_right = first_sib; // Link new child to former first child
+    p->p_sib_left = NULL;       // No left sibling for the first child
+
+    if (first_sib != NULL)
+    {
+        first_sib->p_sib_left = p; // Update left sibling of old first child
+    }
+    p->p_prnt = prnt; // Set parent pointer
+}
+
+/**
+ *  Make the first child of the pcb pointed to by p no longer a child of p.
+ *  Return NULL if p has no children.
+ *  Otherwise, return a pointer to this removed first child pcb.
+ */
+pcb_t *removeChild(pcb_t *p)
+{
+    if (emptyChild(p))
+        return NULL;
+    pcb_t *removed = p->p_child;
+    return outChild(removed);
+}
+
+/**
+ * Make the pcb pointed to by p no longer the child of its parent.
+ * If the pcb pointed to by p has no parent, return NULL.
+ * Otherwise, return p.
+ */
+pcb_t *outChild(pcb_t *p)
+{
+    if (p == NULL || p->p_prnt == NULL)
+        return NULL;
+
+    if (p->p_prnt->p_child == p)
+    {
+        // If `p` is the first child, update parent's child pointer
+        p->p_prnt->p_child = p->p_sib_right;
+    }
+
+    // Check before accessing `p_sib_left`
+    if (p->p_sib_left != NULL)
+    {
+        p->p_sib_left->p_sib_right = p->p_sib_right;
+    }
+
+    // Check before accessing `p_sib_right`
+    if (p->p_sib_right != NULL)
+    {
+        p->p_sib_right->p_sib_left = p->p_sib_left;
+    }
+
+    // Clear removed child's links
+    p->p_prnt = NULL;
+    p->p_sib_left = NULL;
+    p->p_sib_right = NULL;
+
+    return p; // Return the removed child
+}
