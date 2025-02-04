@@ -1,5 +1,6 @@
 #include "../h/pcb.h"
-#include "../h/const.h" 
+#include "../h/const.h"
+// #include <stdio.h>
 
 static pcb_t pcbTable[MAXPROC]; /* Static array for PCB storage */
 static pcb_t *pcbFree_h = NULL; /* Head of free PCB list */
@@ -10,12 +11,14 @@ static pcb_t *pcbFree_h = NULL; /* Head of free PCB list */
  */
 void initPcbs()
 {
+    // printf("Initializing PCBs...\n"); // Debug message
     for (int i = 0; i < MAXPROC - 1; i++)
     {
         pcbTable[i].p_next = &pcbTable[i + 1]; // Link each PCB to the next one
     }
     pcbTable[MAXPROC - 1].p_next = NULL; // Last PCB points to NULL
     pcbFree_h = &pcbTable[0];            // Head points to the first PCB
+    // printf("PCB Initialization Complete.\n"); // Confirm completion
 }
 
 /**
@@ -56,6 +59,7 @@ void freePcb(pcb_t *p)
     pcbFree_h = p;
 }
 
+<<<<<<< HEAD
 
 /**
  *  Return TRUE if the pcb pointed to by p has no children.
@@ -117,3 +121,129 @@ pcb_t *outChild(pcb_t *p)
 
     
 }
+=======
+/**
+ * Returns a NULL pointer, representing an empty process queue.
+ */
+pcb_t *mkEmptyProcQ()
+{
+    return NULL;
+}
+/**
+ * Returns TRUE if the queue is empty, FALSE otherwise.
+ */
+int emptyProcQ(pcb_t *tp)
+{
+    return (tp == NULL);
+}
+
+/**
+ * Inserts a PCB into the queue pointed to by *tp.
+ * Updates the tail pointer if necessary.
+ */
+void insertProcQ(pcb_t **tp, pcb_t *p)
+{
+    if (p == NULL)
+        return;
+
+    if (*tp == NULL)
+    {
+        // If queue is empty, initialize it with p
+        p->p_next = p;
+        p->p_prev = p;
+    }
+    else
+    {
+        // Insert at the end of the circular queue
+        p->p_next = (*tp)->p_next; // New node points to the old first node
+        p->p_prev = *tp;           // New node points back to old tail
+
+        (*tp)->p_next->p_prev = p; // Old first node points back to new node
+        (*tp)->p_next = p;         // Old tail points to new node
+    }
+
+    *tp = p; // Update tail pointer to the new last node
+}
+
+/**
+ * Removes and returns the first PCB (head) from the queue.
+ * Updates the tail pointer if necessary.
+ */
+pcb_t *removeProcQ(pcb_t **tp)
+{
+    if (*tp == NULL)
+        return NULL; // Empty queue
+
+    pcb_t *head = (*tp)->p_next;
+
+    if (head == *tp)
+    {
+        // Only one element in the queue
+        *tp = NULL;
+    }
+    else
+    {
+        // Remove the head from the circular queue
+        (*tp)->p_next = head->p_next;
+        head->p_next->p_prev = *tp;
+    }
+
+    head->p_next = NULL;
+    head->p_prev = NULL;
+    return head;
+}
+
+/**
+ * Removes a specific PCB from the queue.
+ * Returns NULL if not found, otherwise returns the PCB.
+ */
+
+pcb_t *outProcQ(pcb_t **tp, pcb_t *p)
+{
+    if (*tp == NULL || p == NULL)
+        return NULL; // Queue is empty or invalid input
+
+    pcb_t *current = (*tp)->p_next; // Start from the head
+
+    do
+    {
+        if (current == p)
+        { // Found the PCB to remove
+            if (current == *tp && current->p_next == current)
+            {
+                // If it's the only element in the queue
+                *tp = NULL;
+            }
+            else
+            {
+                // Remove from the list
+                current->p_prev->p_next = current->p_next;
+                current->p_next->p_prev = current->p_prev;
+
+                if (*tp == current)
+                {
+                    *tp = current->p_prev; // Update tail if necessary
+                }
+            }
+
+            // Clear pointers before returning
+            p->p_next = NULL;
+            p->p_prev = NULL;
+            return p; // Return the removed PCB
+        }
+        current = current->p_next;
+    } while (current != (*tp)->p_next); // Stop when we loop back to the start
+
+    return NULL; // PCB not found in the queue
+}
+
+/**
+ * Returns the first PCB in the queue without removing it.
+ */
+pcb_t *headProcQ(pcb_t *tp)
+{
+    if (tp == NULL)
+        return NULL;
+    return tp->p_next;
+}
+>>>>>>> 32b3feb (updated queue maintenance)
