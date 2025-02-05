@@ -120,8 +120,15 @@ typedef struct pcb_t
 	/* Support layer information */
 	void *p_supportStruct; /* Pointer to support struct */
 
-} pcb_t, *pcb_PTR; 
+} pcb_t, *pcb_PTR;
 
+/* semaphore descriptor type */
+typedef struct semd_t
+{
+	struct semd_t *s_next; /* Pointer to next semaphore in ASL */
+	int *s_semAdd;		   /* Pointer to the semaphore */
+	pcb_t *s_procQ;		   /* Tail pointer to a process queue */
+} semd_t;
 
 #endif
  
