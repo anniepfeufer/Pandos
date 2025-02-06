@@ -31,7 +31,8 @@ void initASL()
     /*Initialize the Free List*/
     semdFree_h = &semdTable[1]; /* First free semaphore */
 
-    for (int i = 1; i < MAXSEMD; i++)
+    int i;
+    for (i = 1; i < MAXSEMD; i++)
     {
         semdTable[i].s_next = &semdTable[i + 1]; /* Link free list elements*/
     }
