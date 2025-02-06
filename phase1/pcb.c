@@ -1,6 +1,6 @@
 #include "../h/pcb.h"
 #include "../h/const.h"
-// #include <stdio.h>
+/* #include <stdio.h>*/
 
 static pcb_t pcbTable[MAXPROC]; /* Static array for pcb storage */
 static pcb_t *pcbFree_h = NULL; /* Head of free pcb list */
@@ -51,7 +51,8 @@ pcb_t *allocpcb()
 void initpcbs()
 {
     /* printf("Initializing pcbs...\n"); // Debug message*/
-    for (int i = 0; i < MAXPROC - 1; i++)
+    int i;
+    for (i = 0; i < MAXPROC - 1; i++)
     {
         pcbTable[i].p_next = &pcbTable[i + 1]; /* Link each pcb to the next one*/
     }
