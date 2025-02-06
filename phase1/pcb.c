@@ -13,7 +13,7 @@ void freepcb(pcb_t *p)
     if (p == NULL)
         return;
 
-    p->p_next = pcbFree_h; // Insert pcb at the front of the free list
+    p->p_next = pcbFree_h; /* Insert pcb at the front of the free list*/
     pcbFree_h = p;
 }
 
@@ -24,10 +24,10 @@ void freepcb(pcb_t *p)
 pcb_t *allocpcb()
 {
     if (pcbFree_h == NULL)
-        return NULL; // No available pcb
+        return NULL; /* No available pcb*/
 
-    pcb_t *allocated = pcbFree_h;  // Get the first pcb
-    pcbFree_h = pcbFree_h->p_next; // Move head to next pcb
+    pcb_t *allocated = pcbFree_h;  /* Get the first pcb*/
+    pcbFree_h = pcbFree_h->p_next; /* Move head to next pcb*/
 
     /* Reset all fields */
     allocated->p_next = NULL;
@@ -36,7 +36,7 @@ pcb_t *allocpcb()
     allocated->p_child = NULL;
     allocated->p_sib_left = NULL;
     allocated->p_sib_right = NULL;
-    allocated->p_s = (state_t){0}; // Reset processor state
+    allocated->p_s = (state_t){0}; /* Reset processor state*/
     allocated->p_time = 0;
     allocated->p_semAdd = NULL;
     allocated->p_supportStruct = NULL;
@@ -50,14 +50,14 @@ pcb_t *allocpcb()
  */
 void initpcbs()
 {
-    // printf("Initializing pcbs...\n"); // Debug message
+    /* printf("Initializing pcbs...\n"); // Debug message*/
     for (int i = 0; i < MAXPROC - 1; i++)
     {
-        pcbTable[i].p_next = &pcbTable[i + 1]; // Link each pcb to the next one
+        pcbTable[i].p_next = &pcbTable[i + 1]; /* Link each pcb to the next one*/
     }
-    pcbTable[MAXPROC - 1].p_next = NULL; // Last pcb points to NULL
-    pcbFree_h = &pcbTable[0];            // Head points to the first pcb
-    // printf("pcb Initialization Complete.\n"); // Confirm completion
+    pcbTable[MAXPROC - 1].p_next = NULL; /* Last pcb points to NULL*/
+    pcbFree_h = &pcbTable[0];            /* Head points to the first pcb*/
+    /* printf("pcb Initialization Complete.\n"); // Confirm completion*/
 }
 
 /**
@@ -87,21 +87,21 @@ void insertProcQ(pcb_t **tp, pcb_t *p)
 
     if (*tp == NULL)
     {
-        // If queue is empty, initialize it with p
+        /* If queue is empty, initialize it with p*/
         p->p_next = p;
         p->p_prev = p;
     }
     else
     {
-        // Insert at the end of the circular queue
-        p->p_next = (*tp)->p_next; // New node points to the old first node
-        p->p_prev = *tp;           // New node points back to old tail
+        /* Insert at the end of the circular queue*/
+        p->p_next = (*tp)->p_next; /* New node points to the old first node*/
+        p->p_prev = *tp;           /* New node points back to old tail*/
 
-        (*tp)->p_next->p_prev = p; // Old first node points back to new node
-        (*tp)->p_next = p;         // Old tail points to new node
+        (*tp)->p_next->p_prev = p; /*Old first node points back to new node*/
+        (*tp)->p_next = p;         /* Old tail points to new node*/
     }
 
-    *tp = p; // Update tail pointer to the new last node
+    *tp = p; /* Update tail pointer to the new last node*/
 }
 
 /**
@@ -120,40 +120,40 @@ pcb_t *removeProcQ(pcb_t **tp)
 pcb_t *outProcQ(pcb_t **tp, pcb_t *p)
 {
     if (*tp == NULL || p == NULL)
-        return NULL; // Queue is empty or invalid input
+        return NULL; /* Queue is empty or invalid input*/
 
-    pcb_t *current = (*tp)->p_next; // Start from the head
+    pcb_t *current = (*tp)->p_next; /* Start from the head*/
 
     do
     {
         if (current == p)
-        { // Found the pcb to remove
+        { /* Found the pcb to remove*/
             if (current == *tp && current->p_next == current)
             {
-                // If it's the only element in the queue
+                /* If it's the only element in the queue*/
                 *tp = NULL;
             }
             else
             {
-                // Remove from the list
+                /* Remove from the list*/
                 current->p_prev->p_next = current->p_next;
                 current->p_next->p_prev = current->p_prev;
 
                 if (*tp == current)
                 {
-                    *tp = current->p_prev; // Update tail if necessary
+                    *tp = current->p_prev; /* Update tail if necessary*/
                 }
             }
 
-            // Clear pointers before returning
+            /* Clear pointers before returning*/
             p->p_next = NULL;
             p->p_prev = NULL;
-            return p; // Return the removed pcb
+            return p; /* Return the removed pcb*/
         }
         current = current->p_next;
-    } while (current != (*tp)->p_next); // Stop when we loop back to the start
+    } while (current != (*tp)->p_next); /* Stop when we loop back to the start*/
 
-    return NULL; // pcb not found in the queue
+    return NULL; /* pcb not found in the queue*/
 }
 
 /**
@@ -188,16 +188,16 @@ void insertChild(pcb_t *prnt, pcb_t *p)
 
     pcb_t *first_sib = prnt->p_child;
 
-    prnt->p_child = p;          // Insert p as the first child
-    p->p_prnt = prnt;           // Set parent pointer
-    p->p_sib_right = first_sib; // Link new child to former first child
-    p->p_sib_left = NULL;       // No left sibling for the first child
+    prnt->p_child = p;          /* Insert p as the first child*/
+    p->p_prnt = prnt;           /*Set parent pointer*/
+    p->p_sib_right = first_sib; /* Link new child to former first child*/
+    p->p_sib_left = NULL;       /* No left sibling for the first child*/
 
     if (first_sib != NULL)
     {
-        first_sib->p_sib_left = p; // Update left sibling of old first child
+        first_sib->p_sib_left = p; /* Update left sibling of old first child*/
     }
-    p->p_prnt = prnt; // Set parent pointer
+    p->p_prnt = prnt; /* Set parent pointer*/
 }
 
 /**
@@ -225,26 +225,26 @@ pcb_t *outChild(pcb_t *p)
 
     if (p->p_prnt->p_child == p)
     {
-        // If p is the first child, update parent's child pointer
+        /* If p is the first child, update parent's child pointer*/
         p->p_prnt->p_child = p->p_sib_right;
     }
 
-    // Check before accessing `p_sib_left`
+    /*Check before accessing `p_sib_left`*/
     if (p->p_sib_left != NULL)
     {
         p->p_sib_left->p_sib_right = p->p_sib_right;
     }
 
-    // Check before accessing `p_sib_right`
+    /* Check before accessing `p_sib_right`*/
     if (p->p_sib_right != NULL)
     {
         p->p_sib_right->p_sib_left = p->p_sib_left;
     }
 
-    // Clear removed child's links
+    /* Clear removed child's links*/
     p->p_prnt = NULL;
     p->p_sib_left = NULL;
     p->p_sib_right = NULL;
 
-    return p; // Return the removed child
+    return p; /* Return the removed child*/
 }

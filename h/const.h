@@ -28,7 +28,7 @@
 
 #define NULL 			    ((void *)0xFFFFFFFF)
 #define MAXPROC 20          /* Maximum number of concurrent processes */
-#define MAXINT 0x7FFFFFFF   // Maximum positive integer for 32-bit systems
+#define MAXINT 0x7FFFFFFF   /* Maximum positive integer for 32-bit systems*/
 
 /* device interrupts */
 #define DISKINT			  3

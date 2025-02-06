@@ -2,14 +2,14 @@
 #include "../h/pcb.h"
 #include "../h/const.h"
 
-#define MAXSEMD MAXPROC // Same as MAXPROC
+#define MAXSEMD MAXPROC /* Same as MAXPROC*/
 
-// Static array of semaphores
-static semd_t semdTable[MAXSEMD + 2]; // +2 for dummy head/tail
+/* Static array of semaphores*/
+static semd_t semdTable[MAXSEMD + 2]; /* +2 for dummy head/tail*/
 
-// Pointers to ASL and Free List
-static semd_t *semd_h;     // Active Semaphore List 
-static semd_t *semdFree_h; // Unused semaphores
+/* Pointers to ASL and Free List*/
+static semd_t *semd_h;     /* Active Semaphore List */
+static semd_t *semdFree_h; /* Unused semaphores*/
 
 /**
  * Initializes semdFree_h with semdTable[MAXSEMD] and sets up semd_h
@@ -18,25 +18,25 @@ static semd_t *semdFree_h; // Unused semaphores
  */
 void initASL()
 {
-    // Initialize dummy head and tail nodes
-    semd_h = &semdTable[0];      // Head dummy node
-    semd_h->s_semAdd = (int *)0; // Set head value
+    /* Initialize dummy head and tail nodes*/
+    semd_h = &semdTable[0];      /* Head dummy node*/
+    semd_h->s_semAdd = (int *)0; /* Set head value*/
 
-    semd_t *tail = &semdTable[MAXSEMD + 1]; // Tail dummy node
-    tail->s_semAdd = (int *)MAXINT;         // Set tail value
+    semd_t *tail = &semdTable[MAXSEMD + 1]; /* Tail dummy node*/
+    tail->s_semAdd = (int *)MAXINT;         /* Set tail value*/
 
-    semd_h->s_next = tail; // Link head to tail
-    tail->s_next = NULL;   // Tail points to NULL
+    semd_h->s_next = tail; /* Link head to tail*/
+    tail->s_next = NULL;   /* Tail points to NULL*/
 
-    // Initialize the Free List
-    semdFree_h = &semdTable[1]; // First free semaphore 
+    /*Initialize the Free List*/
+    semdFree_h = &semdTable[1]; /* First free semaphore */
 
     for (int i = 1; i < MAXSEMD; i++)
     {
-        semdTable[i].s_next = &semdTable[i + 1]; // Link free list elements
+        semdTable[i].s_next = &semdTable[i + 1]; /* Link free list elements*/
     }
 
-    semdTable[MAXSEMD].s_next = NULL; // Last free element points to NULL
+    semdTable[MAXSEMD].s_next = NULL; /* Last free element points to NULL*/
 }
 
 /**
@@ -45,14 +45,14 @@ void initASL()
  */
 static semd_t *findSemd(int *semAdd)
 {
-    semd_t *current = semd_h->s_next; // Start from first real node 
+    semd_t *current = semd_h->s_next; /* Start from first real node */
 
     while (current != NULL && current->s_semAdd < semAdd)
     {
         current = current->s_next;
     }
 
-    // If found, return the descriptor; otherwise, return NULL
+    /* If found, return the descriptor; otherwise, return NULL*/
     if (current != NULL && current->s_semAdd == semAdd)
     {
         return current;
@@ -71,24 +71,24 @@ static semd_t *findSemd(int *semAdd)
 int insertBlocked(int *semAdd, pcb_t *p)
 {
     if (p == NULL)
-        return TRUE; // Invalid input
+        return TRUE; /* Invalid input*/
 
-    semd_t *semd = findSemd(semAdd); // Look for existing semaphore
+    semd_t *semd = findSemd(semAdd); /* Look for existing semaphore*/
 
     if (semd == NULL)
     {
-        // Allocate new semd_t from the free list
+        /* Allocate new semd_t from the free list*/
         if (semdFree_h == NULL)
-            return TRUE; // No free descriptors available
+            return TRUE; /* No free descriptors available*/
 
-        semd = semdFree_h;               // Take first free descriptor
-        semdFree_h = semdFree_h->s_next; // Update free list
+        semd = semdFree_h;               /*Take first free descriptor*/
+        semdFree_h = semdFree_h->s_next; /* Update free list*/
 
-        // Initialize new semaphore descriptor
+        /* Initialize new semaphore descriptor*/
         semd->s_semAdd = semAdd;
         semd->s_procQ = mkEmptyProcQ();
 
-        // Insert into ASL in sorted order
+        /* Insert into ASL in sorted order*/
         semd_t *prev = semd_h;
         while (prev->s_next != NULL && prev->s_next->s_semAdd < semAdd)
         {
@@ -98,7 +98,7 @@ int insertBlocked(int *semAdd, pcb_t *p)
         prev->s_next = semd;
     }
 
-    // Insert process into the process queue
+    /* Insert process into the process queue*/
     insertProcQ(&(semd->s_procQ), p);
     return FALSE;
 }
@@ -111,22 +111,22 @@ int insertBlocked(int *semAdd, pcb_t *p)
  */
 pcb_t *removeBlocked(int *semAdd)
 {
-    semd_t *semd = findSemd(semAdd); // Find the semaphore descriptor
+    semd_t *semd = findSemd(semAdd); /* Find the semaphore descriptor*/
 
     if (semd == NULL)
-        return NULL; // Semaphore not found
+        return NULL; /* Semaphore not found*/
 
-    // Remove the first pcb from the process queue
+    /* Remove the first pcb from the process queue*/
     pcb_t *removedpcb = removeProcQ(&(semd->s_procQ));
     if (removedpcb == NULL)
-        return NULL; // No process was blocked on this semaphore
+        return NULL; /* No process was blocked on this semaphore*/
 
-    removedpcb->p_semAdd = NULL; // Clear pcb's semaphore reference
+    removedpcb->p_semAdd = NULL; /*Clear pcb's semaphore reference*/
 
-    // If the process queue is now empty, remove the semaphore descriptor from ASL
+    /* If the process queue is now empty, remove the semaphore descriptor from ASL*/
     if (emptyProcQ(semd->s_procQ))
     {
-        // Find and remove the semaphore descriptor from ASL
+        /* Find and remove the semaphore descriptor from ASL*/
         semd_t *prev = semd_h;
         while (prev->s_next != NULL && prev->s_next != semd)
         {
@@ -134,10 +134,10 @@ pcb_t *removeBlocked(int *semAdd)
         }
         if (prev->s_next == semd)
         {
-            prev->s_next = semd->s_next; // Unlink semd from ASL
+            prev->s_next = semd->s_next; /* Unlink semd from ASL*/
         }
 
-        // Return the semaphore descriptor to the free list
+        /* Return the semaphore descriptor to the free list*/
         semd->s_next = semdFree_h;
         semdFree_h = semd;
     }
