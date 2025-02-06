@@ -118,6 +118,11 @@ void insertProcQ(pcb_t **tp, pcb_t *p)
  */
 pcb_t *removeProcQ(pcb_t **tp)
 {
+    if (tp == NULL || *tp == NULL)
+    {
+        return NULL; /* Handle empty queue safely */
+    }
+
     return outProcQ(tp, (*tp)->p_next);
 }
 
