@@ -66,9 +66,9 @@ static semd_t *findSemd(int *semAdd)
 
 /**
  * Inserts the pcb p at the tail of the process queue associated with
- * the semaphore at semAdd. If the semaphore is inactive, allocates a 
- * new descriptor from semdFree_h and inserts it into the ASL in sorted order. 
- * Returns TRUE if a new descriptor is needed but semdFree_h is empty, 
+ * the semaphore at semAdd. If the semaphore is inactive, allocates a
+ * new descriptor from semdFree_h and inserts it into the ASL in sorted order.
+ * Returns TRUE if a new descriptor is needed but semdFree_h is empty,
  * otherwise returns FALSE.
  */
 int insertBlocked(int *semAdd, pcb_t *p)
@@ -103,6 +103,10 @@ int insertBlocked(int *semAdd, pcb_t *p)
 
     /* Insert process into the process queue */
     insertProcQ(&(semd->s_procQ), p);
+
+    /* Set semaphore address in the process */
+    p->p_semAdd = semAdd;
+
     return FALSE;
 }
 
@@ -120,11 +124,12 @@ pcb_t *removeBlocked(int *semAdd)
         return NULL; /* Semaphore not found */
 
     /* Remove the first pcb from the process queue */
-    pcb_t *removedpcb = removeProcQ(&(semd->s_procQ));
-    if (removedpcb == NULL)
+    pcb_t *removedPcb = removeProcQ(&(semd->s_procQ));
+    if (removedPcb == NULL)
         return NULL; /* No process was blocked on this semaphore */
 
-    removedpcb->p_semAdd = NULL; /* Clear pcb's semaphore reference */
+    /* Clear pcb's semaphore reference */
+    removedPcb->p_semAdd = NULL;
 
     /* If the process queue is now empty, remove the semaphore descriptor from ASL */
     if (emptyProcQ(semd->s_procQ))
@@ -145,7 +150,7 @@ pcb_t *removeBlocked(int *semAdd)
         semdFree_h = semd;
     }
 
-    return removedpcb;
+    return removedPcb;
 }
 
 /**
@@ -166,8 +171,8 @@ pcb_t *outBlocked(pcb_t *p)
         return NULL; /* Semaphore not found (error condition) */
 
     /* Remove p from the process queue */
-    pcb_t *removedpcb = outProcQ(&(semd->s_procQ), p);
-    if (removedpcb == NULL)
+    pcb_t *removedPcb = outProcQ(&(semd->s_procQ), p);
+    if (removedPcb == NULL)
         return NULL; /* p was NOT in the process queue (error condition) */
 
     /* If the process queue is now empty, remove the semaphore descriptor from ASL */
@@ -188,7 +193,7 @@ pcb_t *outBlocked(pcb_t *p)
         semdFree_h = semd;
     }
 
-    return removedpcb;
+    return p;
 }
 
 /**
