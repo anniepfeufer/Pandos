@@ -1,3 +1,20 @@
+/************************** ASL.c ******************************
+ *
+ * This module manages the Active Semaphore List (ASL) in Pandos.
+ * The ASL is used to track active semaphores and their associated process queues.
+ *
+ * Data Structure Overview:
+ * - semd_t semdTable[MAXSEMD + 2]: A static array of semaphore descriptors.
+ *   The first and last elements serve as dummy head and tail nodes for efficient list traversal.
+ * - semd_h: Pointer to the head of the ASL, initialized with the dummy head node.
+ * - semdFree_h: Pointer to the head of the free semaphore descriptor list.
+ *
+ * Implementation Summary:
+ * - The ASL is maintained as a sorted singly linked list using semaphore addresses (s_semAdd) for ordering.
+ * - Semaphore descriptors are allocated from semdFree_h and returned to it when no longer needed.
+ * - Functions are provided for inserting, removing, and querying process control blocks (pcbs) associated with semaphores.
+ ***************************************************************/
+
 #include "../h/asl.h"
 #include "../h/pcb.h"
 #include "../h/const.h"

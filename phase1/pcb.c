@@ -1,3 +1,16 @@
+/************************** PCB.c ******************************
+ *
+ * This module manages the Process Control Block (pcb) data structure,
+ * providing mechanisms for pcb allocation, deallocation, process queue
+ * management, and process tree maintenance.
+ *
+ * Implementation Summary:
+ * - pcbs are stored in a static array (pcbTable) and managed via a free list (pcbFree_h).
+ * - Process queues are circular, doubly linked lists where the tail pointer is updated as needed.
+ * - Process trees are maintained using parent and sibling pointers for efficient traversal.
+ * - Functions for allocation/deallocation and queue/tree manipulation are provided with consistent interfaces.
+ ***************************************************************/
+
 #include "../h/pcb.h"
 #include "../h/const.h"
 
@@ -154,7 +167,8 @@ pcb_t *outProcQ(pcb_t **tp, pcb_t *p)
 
                 if (*tp == current)
                 {
-                    *tp = current->p_prev; /* Update tail if necessary */
+                    /* Update tail if necessary */
+                    *tp = current->p_prev;
                 }
             }
 
@@ -208,7 +222,8 @@ void insertChild(pcb_t *prnt, pcb_t *p)
 
     if (first_sib != NULL)
     {
-        first_sib->p_sib_left = p; /* Update left sibling of old first child */
+        /* Update left sibling of old first child */
+        first_sib->p_sib_left = p;
     }
     p->p_prnt = prnt; /* Set parent pointer */
 }
@@ -222,8 +237,8 @@ pcb_t *removeChild(pcb_t *p)
 {
     if (emptyChild(p))
         return NULL;
-    pcb_t *removed = p->p_child;
-    return outChild(removed);
+    pcb_t *removed = p->p_child; /* Get the first child */
+    return outChild(removed);    /* Remove the child from the process tree and return it */
 }
 
 /**
